@@ -71,6 +71,7 @@
             justify-content: space-between;
             align-items: center;
             min-height: 120px;
+            overflow: hidden;
         }
         .uperxbarsec {
             width: 100%;
@@ -87,8 +88,12 @@
             overflow: hidden;
         }
         .fnamrx {
-            font-size: 32px;
+            font-size: 26px;
             display: inline-block;
+            white-space: nowrap;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
             transition: transform 0.2s;
         }
         .bottomxbtnx {
@@ -98,24 +103,40 @@
             align-items: center;
             border-top: 1px solid #eee;
             padding-top: 10px;
+            gap: 5px;
         }
         input[type="color"] {
             border: none;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             cursor: pointer;
             background: none;
+            flex-shrink: 0;
         }
-        .downxbtn {
-            background-color: #007bff;
-            color: white;
-            padding: 6px 12px;
+        .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .downxbtn, .copyxbtn {
+            white-space: nowrap;
+            padding: 6px 8px;
             border-radius: 4px;
-            font-size: 13px;
+            font-size: 11px;
             cursor: pointer;
             font-weight: 600;
             transition: background 0.2s;
+            border: none;
+            color: white;
+        }
+        .copyxbtn {
+            background-color: #28a745;
+        }
+        .copyxbtn:hover {
+            background-color: #218838;
+        }
+        .downxbtn {
+            background-color: #007bff;
         }
         .downxbtn:hover {
             background-color: #0056b3;
@@ -172,24 +193,20 @@
     });
 
     document.addEventListener('keydown', function(e) {
-        // Block F12
         if (e.key === 'F12' || e.keyCode === 123) {
             e.preventDefault();
             window.location.reload();
         }
-        // Block Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
         if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
             e.preventDefault();
             window.location.reload();
         }
-        // Block Ctrl+U (View Source)
         if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
             e.preventDefault();
             window.location.reload();
         }
     });
 
-    // Infinite Debugger Trap to block inspection tools
     setInterval(function() {
         const startTime = performance.now();
         debugger;
@@ -207,7 +224,7 @@
         "Allura", "Alex Brush", "Petit Formal Script", "Italianno", "Clicker Script"
     ];
 
-    let currentLimit = 6; // Pehle 6 dikhenge
+    let currentLimit = 6; 
     const textInput = document.getElementById('textname');
     const signBody = document.getElementById('digsignbody');
     const loadMoreBtn = document.getElementById('loadMoreBTN');
@@ -223,15 +240,12 @@
 
         signBody.innerHTML = "";
         
-        // Unlimited loop create karne ke liye hum base fonts ko repeat aur variations ke sath generate karenge
-        let generatedCount = 0;
         for (let i = 0; i < currentLimit; i++) {
             let fontIndex = i % baseFonts.length;
             let font = baseFonts[fontIndex];
             
-            // Har round mein thoda unique look dene ke liye variations (italic, spacing, tilt) add karenge
             let isItalic = (i % 3 === 0) ? 'italic' : 'normal';
-            let letterSpacing = (i % 2 === 0) ? '0px' : '1px';
+            let letterSpacing = '0px';
             let skewAngle = (i % 4 === 0) ? '-5deg' : '0deg';
 
             const card = document.createElement('div');
@@ -247,23 +261,25 @@
                 </div>
                 <div class="bottomxbtnx">
                     <input value="#000F55" title="Change Color" type="color" oninput="changeColor(this)">
-                    <span class="downxbtn" onclick="downloadSignature(this, '${font}', ${i + 1})">📥 Download</span>
+                    <div class="btn-group">
+                        <button class="copyxbtn" onclick="copySignature(this, '${font}')">📋 Copy</button>
+                        <button class="downxbtn" onclick="downloadSignature(this, '${font}', ${i + 1})">📥 Download</button>
+                    </div>
                 </div>
             `;
             signBody.appendChild(card);
         }
 
-        // Load More button hamesha visible rahega taaki aap unlimited bar click kar sakein
         loadMoreBtn.style.display = 'block';
     }
 
     textInput.addEventListener('input', () => {
-        currentLimit = 6; // Naya naam daalne par reset
+        currentLimit = 6; 
         renderSignatures();
     });
 
     function loadMoreSignatures() {
-        currentLimit += 6; // Har click par 6 aur naye signature cards add ho jayenge (Unlimited)
+        currentLimit += 6; 
         renderSignatures();
     }
 
@@ -290,10 +306,17 @@
 
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = 600;
-        canvas.height = 200;
+        
+        ctx.font = `bold 40px "${fontName}", cursive, sans-serif`;
+        const textMetrics = ctx.measureText(text);
+        const padding = 80;
+        canvas.width = Math.max(280, textMetrics.width + padding);
+        canvas.height = 140;
 
-        ctx.font = `bold 50px "${fontName}", cursive, sans-serif`;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.font = `bold 40px "${fontName}", cursive, sans-serif`;
         ctx.fillStyle = color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -303,6 +326,56 @@
         link.download = `signature_${index}_${fontName}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
+
+        const originalText = btnElem.innerHTML;
+        btnElem.innerHTML = "📥 Download Done";
+        btnElem.style.backgroundColor = "#28a745";
+        setTimeout(() => {
+            btnElem.innerHTML = originalText;
+            btnElem.style.backgroundColor = "";
+        }, 2000);
+    }
+
+    async function copySignature(btnElem, fontName) {
+        const card = btnElem.closest('.dfontcnt');
+        const textSpan = card.querySelector('.fnamrx');
+        const text = textSpan.innerText;
+        const color = textSpan.style.color;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        ctx.font = `bold 40px "${fontName}", cursive, sans-serif`;
+        const textMetrics = ctx.measureText(text);
+        const padding = 80;
+        canvas.width = Math.max(280, textMetrics.width + padding);
+        canvas.height = 140;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.font = `bold 40px "${fontName}", cursive, sans-serif`;
+        ctx.fillStyle = color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+        try {
+            canvas.toBlob(async (blob) => {
+                const item = new ClipboardItem({ 'image/png': blob });
+                await navigator.clipboard.write([item]);
+                
+                const originalText = btnElem.innerHTML;
+                btnElem.innerHTML = "📋 Copy Done";
+                btnElem.style.backgroundColor = "#17a2b8";
+                setTimeout(() => {
+                    btnElem.innerHTML = originalText;
+                    btnElem.style.backgroundColor = "";
+                }, 2000);
+            });
+        } catch (err) {
+            // Fallback
+        }
     }
 
     renderSignatures();

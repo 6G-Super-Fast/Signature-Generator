@@ -71,7 +71,6 @@
             justify-content: space-between;
             align-items: center;
             min-height: 120px;
-            overflow: hidden;
         }
         .uperxbarsec {
             width: 100%;
@@ -88,12 +87,8 @@
             overflow: hidden;
         }
         .fnamrx {
-            font-size: 26px;
             display: inline-block;
             white-space: nowrap;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
             transition: transform 0.2s;
         }
         .bottomxbtnx {
@@ -229,6 +224,14 @@
     const signBody = document.getElementById('digsignbody');
     const loadMoreBtn = document.getElementById('loadMoreBTN');
 
+    function getDynamicFontSize(text) {
+        let baseSize = 32;
+        if (text.length > 6) {
+            baseSize = Math.max(14, 32 - (text.length - 6) * 1.2);
+        }
+        return baseSize + "px";
+    }
+
     function renderSignatures() {
         const nameVal = textInput.value.trim();
         
@@ -239,6 +242,7 @@
         }
 
         signBody.innerHTML = "";
+        const calculatedFontSize = getDynamicFontSize(nameVal);
         
         for (let i = 0; i < currentLimit; i++) {
             let fontIndex = i % baseFonts.length;
@@ -257,7 +261,7 @@
                     <span style="cursor:pointer;" title="Rotate" onclick="rotateSig(this)">🔄</span>
                 </div>
                 <div class="xdisplaydiv">
-                    <span class="fnamrx" style="font-family: '${font}', cursive, sans-serif; font-style: ${isItalic}; letter-spacing: ${letterSpacing}; transform: skewX(${skewAngle}); color: #000F55;">${nameVal}</span>
+                    <span class="fnamrx" style="font-family: '${font}', cursive, sans-serif; font-size: ${calculatedFontSize}; font-style: ${isItalic}; letter-spacing: ${letterSpacing}; transform: skewX(${skewAngle}); color: #000F55;">${nameVal}</span>
                 </div>
                 <div class="bottomxbtnx">
                     <input value="#000F55" title="Change Color" type="color" oninput="changeColor(this)">
@@ -300,23 +304,25 @@
 
     function downloadSignature(btnElem, fontName, index) {
         const card = btnElem.closest('.dfontcnt');
-        const textSpan = card.querySelector('.fnamrx');
+        const textSpan = card.querySelector('.fnomrx') || card.querySelector('.fnamrx');
         const text = textSpan.innerText;
         const color = textSpan.style.color;
+
+        let computedSize = parseInt(window.getComputedStyle(textSpan).fontSize) || 32;
 
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        ctx.font = `bold 40px "${fontName}", cursive, sans-serif`;
+        ctx.font = `bold ${computedSize}px "${fontName}", cursive, sans-serif`;
         const textMetrics = ctx.measureText(text);
-        const padding = 80;
-        canvas.width = Math.max(280, textMetrics.width + padding);
-        canvas.height = 140;
+        const padding = 60;
+        canvas.width = Math.max(250, textMetrics.width + padding);
+        canvas.height = 120;
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.font = `bold 40px "${fontName}", cursive, sans-serif`;
+        ctx.font = `bold ${computedSize}px "${fontName}", cursive, sans-serif`;
         ctx.fillStyle = color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -342,19 +348,21 @@
         const text = textSpan.innerText;
         const color = textSpan.style.color;
 
+        let computedSize = parseInt(window.getComputedStyle(textSpan).fontSize) || 32;
+
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        ctx.font = `bold 40px "${fontName}", cursive, sans-serif`;
+        ctx.font = `bold ${computedSize}px "${fontName}", cursive, sans-serif`;
         const textMetrics = ctx.measureText(text);
-        const padding = 80;
-        canvas.width = Math.max(280, textMetrics.width + padding);
-        canvas.height = 140;
+        const padding = 60;
+        canvas.width = Math.max(250, textMetrics.width + padding);
+        canvas.height = 120;
 
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.font = `bold 40px "${fontName}", cursive, sans-serif`;
+        ctx.font = `bold ${computedSize}px "${fontName}", cursive, sans-serif`;
         ctx.fillStyle = color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
